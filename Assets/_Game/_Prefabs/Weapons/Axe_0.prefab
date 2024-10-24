@@ -12,12 +12,11 @@ GameObject:
   - component: {fileID: 1051453088952361825}
   - component: {fileID: 7038164455772481350}
   - component: {fileID: -5090650021770092999}
-  - component: {fileID: -7349434437893093616}
   - component: {fileID: 5713888095743345927}
   - component: {fileID: 1726365371565348262}
   m_Layer: 0
   m_Name: Axe_0
-  m_TagString: Untagged
+  m_TagString: Weapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -115,18 +114,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-7349434437893093616
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 133753223133515278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a11a3d45f3279a42882d9a773d17231, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5713888095743345927
 MonoBehaviour:
   m_ObjectHideFlags: 0

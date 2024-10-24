@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Character : MonoBehaviour
@@ -6,11 +7,13 @@ public class Character : MonoBehaviour
     [SerializeField] private Rigidbody rigidbodyCharacter;
     [SerializeField] private Animator animationCharacter;
     [SerializeField] private GameObject weaponHolding;
+    [SerializeField] private GameObject areaCombat;
     [SerializeField] private float moveSpeed;
+    [SerializeField] private float timeAfterDeadAnimation;
+    [SerializeField] private bool isDead = false;
 
     [Header("Weapons Properties")]
     [SerializeField] private Weapon weapon;
-    [SerializeField] private GameObject weaponPrefab;
     [SerializeField] private Transform bulletSpawnPostion;
 
     private Quaternion lookDirection;
@@ -18,7 +21,6 @@ public class Character : MonoBehaviour
 
     protected virtual void OnInit()
     {
-        //Instantiate(weaponPrefab, weaponHolding.transform);
         weapon = GetComponent<Weapon>();
     }
 
@@ -33,29 +35,68 @@ public class Character : MonoBehaviour
             lookDirection = Quaternion.LookRotation(_postion).normalized;
             transform.rotation = lookDirection;
 
-            ChangeAniamtion("run", true);
+            ChangeAnimation("run", true);
         }
         else
         {
-            ChangeAniamtion("idle", true);
+            if (isDead == true)
+            {
+                return;
+            }
+
+            ChangeAnimation("idle", true);
         }
     }
 
     public void Attack()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        ChangeAnimation("attack", true);
+        weapon.Shoot();
+    }
+
+    private void OnTriggerEnter(Collider _other)
+    {
+        if (_other.CompareTag("Character"))
         {
-            ChangeAniamtion("attack", true);
-            weapon.Shoot();
+            Attack();
         }
     }
 
-    protected virtual void FindTarget() { }
+    //Death character
+    protected virtual void Die()
+    {
+        if (!isDead)
+        {
+            isDead = true;
+            areaCombat.SetActive(false);
+            ChangeAnimation("dead", true);
+            rigidbodyCharacter.freezeRotation = true;
+            StartCoroutine(SetTimeAterDieAnimation());
+            return;
+        }
+    }
 
-    protected virtual void Die() { }
+    private void OnCollisionEnter(Collision _collision)
+    {
+        if (_collision.gameObject.CompareTag("Weapon"))
+        {
+            Die();
+        }
+    }
 
-    protected virtual void UpSize() { }
+    protected virtual IEnumerator SetTimeAterDieAnimation()
+    {
+        yield return new WaitForSeconds(timeAfterDeadAnimation);
+        Destroy(this.gameObject);
+    }
 
+    //Change size character
+    protected virtual void UpSize()
+    {
+        transform.localScale = new Vector3(transform.localScale.x + 0.1f, transform.localScale.y + 0.1f, transform.localScale.z + 0.1f);
+    }
+
+    //Change cloths
     protected virtual void ChangeWeapon(/*WeaponType _weaponType*/) { }
 
     protected virtual void ChangeHat(/*HatType _hatType*/) { }
@@ -63,9 +104,9 @@ public class Character : MonoBehaviour
     protected virtual void ChangePant(/*PantType _pantType*/) { }
 
     //Animation character
-    private void ChangeAniamtion(string _animationName, bool _stateAniamtion)
+    private void ChangeAnimation(string _animationName, bool _stateAniamtion)
     {
-        ResetAllAniamtionBools();
+        ResetAllAnimationBools();
         switch (_animationName)
         {
             case "idle":
@@ -107,7 +148,7 @@ public class Character : MonoBehaviour
         currentAnimationName = _animationName;
     }
 
-    private void ResetAllAniamtionBools()
+    private void ResetAllAnimationBools()
     {
         animationCharacter.SetBool("IsIdle", false);
         animationCharacter.SetBool("IsDead", false);

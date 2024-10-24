@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(SetTime(time));
+        StartCoroutine(SetTimeNotCollided(time));
     }
 
     public void SetOwner(GameObject _owner)
@@ -19,27 +19,10 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision _collision)
     {
-        //if(owner == null)
-        //{
-        //    Destroy(_collision.gameObject);
-        //    Destroy(gameObject);
-        //    return;
-        //}
-
-        //if (_collision.gameObject != owner && _collision.gameObject.CompareTag("Character") == true)
-        //{
-        //    Destroy(_collision.gameObject);
-        //    Destroy(gameObject);
-        //    return;
-        //}
-
-        //Destroy(gameObject);
-
         if(_collision.gameObject != owner && _collision.gameObject.CompareTag("Character"))
         {
             hasCollided = true;
-            Destroy(_collision.gameObject);
-            //Destroy(gameObject);
+            Destroy(gameObject);
         }else if(_collision.gameObject != owner)
         {
             hasCollided = true;
@@ -48,7 +31,7 @@ public class Bullet : MonoBehaviour
     }
     
     //Bộ đếm thời gian để destroy bullet nếu không va chạm bất cứ collider nào
-    private IEnumerator SetTime(float _time)
+    private IEnumerator SetTimeNotCollided(float _time)
     {
         yield return new WaitForSeconds(_time);
 

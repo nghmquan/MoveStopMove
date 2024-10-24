@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class Player : Character
 {
@@ -17,7 +16,6 @@ public class Player : Character
     private void Update()
     {
         Move(HandleInput());
-        Attack();
     }
 
     //Player movement
@@ -26,10 +24,5 @@ public class Player : Character
         moveHorizontal = fixedJoystick.Horizontal;
         moveVertical = fixedJoystick.Vertical;
         return moveDirection = new Vector3(moveHorizontal, 0, moveVertical);
-    }
-
-    protected override void Move(Vector3 _position)
-    {
-        base.Move(_position);
     }
 }
