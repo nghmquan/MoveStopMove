@@ -4,40 +4,40 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     [SerializeField] private float time;
-    private GameObject owner;
-    private bool hasCollided = false;
+    private Character character;
 
     private void Start()
     {
         StartCoroutine(SetTimeNotCollided(time));
     }
 
-    public void SetOwner(GameObject _owner)
+    public void SetOwner(Character _character)
     {
-        owner = _owner;
+        this.character = _character;
     }
 
     private void OnCollisionEnter(Collision _collision)
     {
-        if(_collision.gameObject != owner && _collision.gameObject.CompareTag("Character"))
+        if(_collision.gameObject.CompareTag("Character"))
         {
-            hasCollided = true;
-            Destroy(gameObject);
-        }else if(_collision.gameObject != owner)
+            Character hitCharacter = _collision.gameObject.GetComponent<Character>();
+            hitCharacter.Die();
+            if(hitCharacter != null && hitCharacter != character)
+            {
+                character.CheckConditionUpSize();
+                Destroy(gameObject);
+            }
+        }
+
+        else if (_collision.gameObject)
         {
-            hasCollided = true;
             Destroy(gameObject);
         }
     }
-    
-    //Bộ đếm thời gian để destroy bullet nếu không va chạm bất cứ collider nào
+
     private IEnumerator SetTimeNotCollided(float _time)
     {
         yield return new WaitForSeconds(_time);
-
-        if (!hasCollided)
-        {
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 }

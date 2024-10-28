@@ -5,16 +5,21 @@ public class Character : MonoBehaviour
 {
     [Header("Character properties")]
     [SerializeField] private Rigidbody rigidbodyCharacter;
+    [SerializeField] private Collider colliderCharacter;
     [SerializeField] private Animator animationCharacter;
     [SerializeField] private GameObject weaponHolding;
     [SerializeField] private GameObject areaCombat;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float timeAfterDeadAnimation;
-    [SerializeField] private bool isDead = false;
+    [SerializeField] private float timeToAttack;
+    [SerializeField] private float rotationSpeed;
+    public bool isDead  = false;
 
     [Header("Weapons Properties")]
     [SerializeField] private Weapon weapon;
     [SerializeField] private Transform bulletSpawnPostion;
+
+    [SerializeField] private int enemyCount = 0;
 
     private Quaternion lookDirection;
     private string currentAnimationName;
@@ -22,12 +27,12 @@ public class Character : MonoBehaviour
     protected virtual void OnInit()
     {
         weapon = GetComponent<Weapon>();
+        weapon.SetOwner(this);
     }
 
-    //Movement character
+    //Character movement
     protected virtual void Move(Vector3 _postion)
     {
-        //moveDirection = new Vector3(_horizontalDirection, 0 , _verticalDirection);
         rigidbodyCharacter.velocity = _postion * moveSpeed + new Vector3(0, rigidbodyCharacter.velocity.y, 0);
 
         if (_postion.x != 0 || _postion.z != 0)
@@ -48,39 +53,59 @@ public class Character : MonoBehaviour
         }
     }
 
+    //Character attack
     public void Attack()
     {
         ChangeAnimation("attack", true);
         weapon.Shoot();
     }
 
+    private void LockTarget(Collider _target)
+    {
+        Vector3 directionToTarget = _target.transform.position - transform.position;
+        directionToTarget.y = 0;
+
+        Quaternion targetRotaion = Quaternion.LookRotation(directionToTarget);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotaion, rotationSpeed);
+    }
+
     private void OnTriggerEnter(Collider _other)
     {
-        if (_other.CompareTag("Character"))
+        if (_other.CompareTag("Character") && _other.GetComponent<Character>())
         {
-            Attack();
+            LockTarget(_other);
+            StartCoroutine(WaitForAttack());
         }
     }
 
-    //Death character
-    protected virtual void Die()
+    private IEnumerator WaitForAttack()
+    {
+        yield return new WaitForSeconds(timeToAttack);
+        Attack();
+    }
+
+    public void CheckConditionUpSize()
+    {
+        enemyCount++;
+        if(enemyCount == 3)
+        {   
+            UpSize();
+        }
+    }
+
+    //Character death
+    public void Die()
     {
         if (!isDead)
         {
             isDead = true;
-            areaCombat.SetActive(false);
             ChangeAnimation("dead", true);
-            rigidbodyCharacter.freezeRotation = true;
+            areaCombat.SetActive(false);
+            rigidbodyCharacter.useGravity = false;
+            rigidbodyCharacter.constraints = RigidbodyConstraints.FreezeAll ;
+            colliderCharacter.enabled = false;
             StartCoroutine(SetTimeAterDieAnimation());
             return;
-        }
-    }
-
-    private void OnCollisionEnter(Collision _collision)
-    {
-        if (_collision.gameObject.CompareTag("Weapon"))
-        {
-            Die();
         }
     }
 
@@ -91,12 +116,12 @@ public class Character : MonoBehaviour
     }
 
     //Change size character
-    protected virtual void UpSize()
+    public void UpSize()
     {
         transform.localScale = new Vector3(transform.localScale.x + 0.1f, transform.localScale.y + 0.1f, transform.localScale.z + 0.1f);
     }
 
-    //Change cloths
+    //Change cloths character
     protected virtual void ChangeWeapon(/*WeaponType _weaponType*/) { }
 
     protected virtual void ChangeHat(/*HatType _hatType*/) { }
@@ -104,7 +129,7 @@ public class Character : MonoBehaviour
     protected virtual void ChangePant(/*PantType _pantType*/) { }
 
     //Animation character
-    private void ChangeAnimation(string _animationName, bool _stateAniamtion)
+    protected virtual void ChangeAnimation(string _animationName, bool _stateAniamtion)
     {
         ResetAllAnimationBools();
         switch (_animationName)
